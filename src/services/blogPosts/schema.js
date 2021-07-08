@@ -64,7 +64,7 @@ PostSchema.static('findPostsWithAuthors', async function (query) {
         .skip(query.options.skip)
         .limit(query.options.limit)
         .sort(query.options.sort)
-        .populate("author")
+        .populate("author", { _id: 0, name: 1, avatar: 1})
 
     return { total, posts }
 })
