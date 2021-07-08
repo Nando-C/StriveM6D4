@@ -32,6 +32,7 @@ blogPostsRouter.get('/', async (req, res, next) => {
         // const posts = await PostModel.find()
         res.send({ links: query.links('/blogPosts', total), total, posts })
     } catch (error) {
+        console.log(error)
         next(createError(500, "An Error ocurred while getting the list of posts"))
     }
 })
@@ -40,7 +41,7 @@ blogPostsRouter.get('/', async (req, res, next) => {
 blogPostsRouter.get('/:postId', async (req, res, next) => {
     try {
         const postId = req.params.postId
-        const post = await PostModel.findById(postId)
+        const post = await PostModel.findPostWithAuthors(postId)
 
         if(post) {
             res.send(post)
@@ -48,6 +49,7 @@ blogPostsRouter.get('/:postId', async (req, res, next) => {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, "An Error ocurred while getting the post"))
     }
 })
@@ -67,7 +69,11 @@ blogPostsRouter.put('/:postId', async (req, res, next) => {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
-        next(createError(500, `An Error ocurred while updating the post ${req.params.postId}`))
+        if(error.name === "ValidationError") {
+            next(createError(400, error))
+        } else {
+            next(createError(500, `An Error ocurred while updating the post ${req.params.postId}`))
+        }
     }
 })
 
@@ -83,18 +89,21 @@ blogPostsRouter.delete('/:postId', async (req, res, next) => {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, `An Error ocurred while deleting the post ${req.params.postId}`))
     }
 })
 
 // ***********************************************************************************
+//                                  COMMENTS
 // ***********************************************************************************
 
 
 // =========  CREATES A NEW COMMENT ON A BLOG POST =============
 blogPostsRouter.post('/:postId', async (req, res, next) => {
     try {
-        const commentToInsert = {...req.body, createdAt: new Date(), updatedAt: new Date()}
+        const commentToInsert = req.body
+        console.log(commentToInsert)
 
         const postId = req.params.postId
         const updatedPost = await PostModel.findByIdAndUpdate(postId, { $push: {comments: commentToInsert}}, { new: true, runValidators: true })
@@ -117,14 +126,15 @@ blogPostsRouter.post('/:postId', async (req, res, next) => {
 blogPostsRouter.get('/:postId/comments', async (req, res, next) => {
     try {
         const postId = req.params.postId
-        const post = await PostModel.findById(postId)
-
+        const post = await PostModel.findPostCommentsWithAuthors(postId)
+        
         if (post) {
             res.send(post.comments)
         } else {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, "An Error ocurred while getting the list of comments"))
     }
 })
@@ -134,7 +144,8 @@ blogPostsRouter.get('/:postId/comments/:commentId', async (req, res, next) => {
     try {
         const postId = req.params.postId
         const commentId = req.params.commentId
-        const postComment = await PostModel.findById(postId, { comments: { $elemMatch: { _id: commentId}}})
+        
+        const postComment = await PostModel.findPostCommentWithAuthor(postId, commentId)
         
         if (postComment) {
             if (postComment.comments.length > 0) {
@@ -147,6 +158,7 @@ blogPostsRouter.get('/:postId/comments/:commentId', async (req, res, next) => {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, `An Error ocurred while getting comment with ID: ${req.params.commentId}`))
     }
 })
@@ -164,6 +176,7 @@ blogPostsRouter.delete('/:postId/comments/:commentId', async (req, res, next) =>
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, `An Error ocurred while deleting comment with ID: ${req.params.commentId}`))
     }
 })
@@ -185,6 +198,7 @@ blogPostsRouter.put('/:postId/comments/:commentId', async (req, res, next) => {
             next(createError(404, `Post with _id ${postId} Not Found!`))
         }
     } catch (error) {
+        console.log(error)
         next(createError(500, `An Error ocurred while updating comment with ID: ${req.params.commentId}`))
     }
 })

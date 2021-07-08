@@ -49,7 +49,12 @@ const PostSchema = new Schema(
                     min: 1,
                     max: 5,
                     default: 1,
-                }
+                },
+                author: [{
+                    type: Schema.Types.ObjectId,
+                    required: true,
+                    ref: "Author"
+                }],
             }
         ]
     },
@@ -67,6 +72,38 @@ PostSchema.static('findPostsWithAuthors', async function (query) {
         .populate("author", { _id: 0, name: 1, avatar: 1})
 
     return { total, posts }
+})
+
+PostSchema.static('findPostWithAuthors' , async function (postId) {
+    const post = await this.findById(postId)
+        .populate('author', { _id: 0, name: 1, avatar: 1})
+    return post
+})
+
+PostSchema.static('findPostCommentsWithAuthors', async function (postId) {
+    const postComments = await this.findById(postId)
+        .populate({ 
+            path: 'comments', 
+            populate: { 
+                path: "author", 
+                select: {_id: 0, name: 1, avatar: 1}
+            }
+        })
+
+    return postComments
+})
+
+PostSchema.static('findPostCommentWithAuthor', async function (postId, commentId) {
+    const postComment = await this.findById(postId, { comments: { $elemMatch: { _id: commentId}}})
+        .populate({ 
+            path: 'comments', 
+            populate: { 
+                path: "author", 
+                select: {_id: 0, name: 1, avatar: 1}
+            }
+        })
+
+    return postComment
 })
 
 export default model("Post", PostSchema)
