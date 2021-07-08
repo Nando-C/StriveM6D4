@@ -83,11 +83,11 @@ blogPostsRouter.delete('/:postId', async (req, res, next) => {
     }
 })
 
-// =============================================================
-// =============================================================
+// ***********************************************************************************
+// ***********************************************************************************
+
 
 // =========  CREATES A NEW COMMENT ON A BLOG POST =============
-
 blogPostsRouter.post('/:postId', async (req, res, next) => {
     try {
         const commentToInsert = {...req.body, createdAt: new Date(), updatedAt: new Date()}
@@ -110,7 +110,6 @@ blogPostsRouter.post('/:postId', async (req, res, next) => {
 })
 
 // =========  RETRIEVES A LIST OF COMMENTS FROM A BLOG POST =============
-
 blogPostsRouter.get('/:postId/comments', async (req, res, next) => {
     try {
         const postId = req.params.postId
@@ -127,7 +126,6 @@ blogPostsRouter.get('/:postId/comments', async (req, res, next) => {
 })
 
 // =========  RETRIEVES A SINGLE COMMENT FROM A BLOG POST =============
-
 blogPostsRouter.get('/:postId/comments/:commentId', async (req, res, next) => {
     try {
         const postId = req.params.postId
@@ -150,7 +148,6 @@ blogPostsRouter.get('/:postId/comments/:commentId', async (req, res, next) => {
 })
 
 // =========  DELETES A COMMENT FROM A BLOG POST =============
-
 blogPostsRouter.delete('/:postId/comments/:commentId', async (req, res, next) => {
     try {
         const postId = req.params.postId
@@ -168,7 +165,6 @@ blogPostsRouter.delete('/:postId/comments/:commentId', async (req, res, next) =>
 })
 
 // =========  UPDATES A COMMENT ON A BLOG POST =============
-
 blogPostsRouter.put('/:postId/comments/:commentId', async (req, res, next) => {
     try {
         const postId = req.params.postId
@@ -188,4 +184,5 @@ blogPostsRouter.put('/:postId/comments/:commentId', async (req, res, next) => {
         next(createError(500, `An Error ocurred while updating comment with ID: ${req.params.commentId}`))
     }
 })
+
 export default blogPostsRouter
