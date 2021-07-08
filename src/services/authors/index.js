@@ -7,7 +7,6 @@ const authorsRouter = express.Router()
 // ===============  CREATES NEW AUTHOR =======================
 authorsRouter.post('/', async (req, res, next) => {
     try {
-        console.log(req.body);
         const newAuthor = new AuthorModel(req.body)
         const { _id } = await newAuthor.save()
 

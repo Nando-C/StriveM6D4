@@ -23,15 +23,20 @@ const PostSchema = new Schema(
                 type: String,
             },
         },
-        author: {
-            name: {
-                type: String,
-                required: true,
-            },
-            avatar: {
-                type: String,
-            },
-        },
+        author: [{
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Author"
+        }],
+        // {  ======= OLD CONFIG OF AUTHOR ====== 
+        //     name: {
+        //         type: String,
+        //         required: true,
+        //     },
+        //     avatar: {
+        //         type: String,
+        //     },
+        // },
         content: {
             type: String,
             required: true,
@@ -52,5 +57,16 @@ const PostSchema = new Schema(
         timestamps: true,
     }
 )
+
+PostSchema.static('findPostsWithAuthors', async function (query) {
+    const total = await this.countDocuments(query.criteria)
+    const posts = await this.find(query.criteria, query.options.fields)
+        .skip(query.options.skip)
+        .limit(query.options.limit)
+        .sort(query.options.sort)
+        .populate("author")
+
+    return { total, posts }
+})
 
 export default model("Post", PostSchema)

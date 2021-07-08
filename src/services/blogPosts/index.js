@@ -1,6 +1,7 @@
 import express from 'express'
 import PostModel from './schema.js'
 import createError from 'http-errors'
+import q2m from 'query-to-mongo'
 
 const blogPostsRouter = express.Router()
 
@@ -13,7 +14,7 @@ blogPostsRouter.post('/', async (req, res, next) => {
         res.status(201).send({ _id })
 
     } catch (error) {
-        if(error.name === "validationError") {
+        if(error.name === "ValidationError") {
             next(createError(400, error))
         } else {
             console.log(error)
@@ -25,8 +26,11 @@ blogPostsRouter.post('/', async (req, res, next) => {
 // ===============  RETURNS BLOG POST LIST =======================
 blogPostsRouter.get('/', async (req, res, next) => {
     try {
-        const posts = await PostModel.find()
-        res.send(posts)
+        const query = q2m(req.query)
+
+        const { total, posts } = await PostModel.findPostsWithAuthors(query)
+        // const posts = await PostModel.find()
+        res.send({ links: query.links('/blogPosts', total), total, posts })
     } catch (error) {
         next(createError(500, "An Error ocurred while getting the list of posts"))
     }
